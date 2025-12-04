@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.21)
-project(MyProject LANGUAGES CXX)
+project(MyProject LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
+
+set(CMAKE_C_COMPILER "/etc/profiles/per-user/sinedka/bin/clang")
+set(CMAKE_CXX_COMPILER "/etc/profiles/per-user/sinedka/bin/clang++")
+
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
@@ -19,11 +20,20 @@ set(SOURCES
     src/main.cpp
 )
 
-# set(HEADERS
-#     include/Scanner/scanner.h
-#     include/Scanner/token.h
-# )
+add_library(libiberty STATIC
+    libiberty/xmalloc.c
+)
+
+target_include_directories(libiberty PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
+file(GLOB SPP_SOURCES "/home/sinedka/slang/spp/*.cpp")
+add_library(spp ${SPP_SOURCES})
+
+target_include_directories(spp PUBLIC ${CMAKE_SOURCE_DIR}/include/spp ${CMAKE_SOURCE_DIR}/include)
+
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC libiberty)

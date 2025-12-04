@@ -2,8 +2,8 @@
 #define SLLIB_H
 
 #include "line_maps.h"
-
 #include "ttype_table.h"
+#include "libiberty.h"
 
 #define OP(e, s) SL_##e,
 #define TK(e, s) SL_##e,
@@ -301,7 +301,25 @@ struct macro_context {
 /* A "run" of tokens; part of a chain of runs.  */
 class tokenrun {
   tokenrun *next, *prev;
+
+public:
   cpp_token *base, *limit;
+
+  tokenrun(unsigned int count, tokenrun * cur){
+      base = XNEWVEC (cpp_token, count);
+      limit = base + count;
+      next = NULL;
+      prev = cur; 
+  }
+
+  tokenrun *next_tokenrun() {
+    if (this->next == nullptr) {
+      this->next = XNEW(tokenrun);
+      *(this->next) = tokenrun(250, this);
+    }
+
+    return this->next;
+  }
 };
 
 /* The kind of tokens carried by a cpp_context.  */

@@ -7,10 +7,11 @@
   in {
     devShells.x86_64-linux.default = pkgs.mkShell {
       buildInputs = with pkgs; [
-        cmake
       ];
       # set the environment variables that Qt apps expect
       shellHook = ''
+        export CC=/etc/profiles/per-user/sinedka/bin/clang
+        export CXX=/etc/profiles/per-user/sinedka/bin/clang++
       '';
     };
   };
