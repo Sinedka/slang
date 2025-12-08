@@ -1,4 +1,5 @@
 #include "spplib.h"
+#include "system.h"
 
 /* Lex a token into RESULT (external interface).  Takes care of issues
    like directive handling, token lookahead, multiple include
@@ -11,7 +12,7 @@ const cpp_token * cpp_reader::_cpp_lex_token ()
     {
       if (this->cur_token == this->cur_run->limit)
 	{
-	  this->cur_run = next_tokenrun (this->cur_run);
+	  this->cur_run = this->cur_run->next_tokenrun();
 	  this->cur_token = this->cur_run->base;
 	}
       /* We assume that the current token is somewhere in the current

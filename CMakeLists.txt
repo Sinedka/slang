@@ -26,6 +26,12 @@ add_library(libiberty STATIC
 
 target_include_directories(libiberty PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
+add_library(system STATIC
+    system/system.cpp
+)
+
+target_include_directories(system PUBLIC ${CMAKE_SOURCE_DIR}/include)
+
 file(GLOB SPP_SOURCES "/home/sinedka/slang/spp/*.cpp")
 add_library(spp ${SPP_SOURCES})
 
