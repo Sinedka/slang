@@ -5,6 +5,7 @@
 #include "symtab.h"
 #include "ttype_table.h"
 #include <cstring>
+#include <iostream>
 #include <string>
 
 #define OP(e, s) CPP_##e,
@@ -17,10 +18,10 @@ enum sl_ttype {
   CPP_KEYWORD,
 
   /* Positions in the table.  */
-  CPP_LAST_EQ = CPP_LSHIFT,
-  CPP_FIRST_DIGRAPH = CPP_HASH,
-  CPP_LAST_PUNCTUATOR = CPP_SCOPE,
-  CPP_LAST_SL_OP = CPP_LESS_EQ
+  // CPP_LAST_EQ = CPP_LSHIFT,
+  // CPP_FIRST_DIGRAPH = CPP_HASH,
+  // CPP_LAST_PUNCTUATOR = CPP_SCOPE,
+  // CPP_LAST_SL_OP = CPP_LESS_EQ
 };
 
 #undef OP
@@ -55,24 +56,25 @@ public:
 };
 
 class cpp_string {
-    unsigned int len;
-    char *text = nullptr;
+  unsigned int len;
+  char *text = nullptr;
 
 public:
-    cpp_string(char *base, unsigned int size);
-    cpp_string(char *base, char *end);
-    cpp_string();
-    cpp_string(const cpp_string &other);         // копирующий конструктор
-    cpp_string(cpp_string &&other) noexcept;     // перемещающий конструктор
+  cpp_string(char *base, unsigned int size);
+  cpp_string(char *base, char *end);
+  cpp_string();
+  cpp_string(const cpp_string &other);     // копирующий конструктор
+  cpp_string(cpp_string &&other) noexcept; // перемещающий конструктор
 
-    cpp_string &operator=(const cpp_string &other); // копирующее присваивание
-    cpp_string &operator=(cpp_string &&other) noexcept; // перемещающее присваивание
+  cpp_string &operator=(const cpp_string &other); // копирующее присваивание
+  cpp_string &
+  operator=(cpp_string &&other) noexcept; // перемещающее присваивание
 
-    void add(cpp_string str);
-    unsigned int get_hash();
-    void print();
+  void add(cpp_string str);
+  unsigned int get_hash();
+  void print();
 
-    ~cpp_string();
+  ~cpp_string();
 };
 
 /* Flags for the cpp_token structure.  */
@@ -191,14 +193,51 @@ struct cpp_token {
     struct cpp_macro_arg macro_arg;
 
     // other
-    void *other;
+    void *other1;
 
-    cpp_token_u();
+    cpp_token_u() {
+      str = cpp_string();
+      return;
+    };
     ~cpp_token_u();
 
   } val;
 
-  cpp_token();
+  cpp_token() { return; };
+  void print() {
+    std::cout << "tn_type: ";
+    if (type == 49) {
+      std::cout << "CPP_NAME; ";
+      // val.str.print();
+
+    } else if (type == 50) {
+      std::cout << "CPP_NUMBER; ";
+      val.str.print();
+    } else if (type == 51) {
+      std::cout << "CPP_CHAR; ";
+      val.str.print();
+    } else if (type == 52) {
+      std::cout << "CPP_OTHER; ";
+      val.str.print();
+    } else if (type == 53) {
+      std::cout << "CPP_STRING; ";
+      val.str.print();
+
+    } else if (type == CPP_EOF) {
+      std::cout << "CPP_EOF; ";
+
+    } else {
+      std::cout << "OPERATION; ";
+#define OP(e, s) s,
+#define TK(e, s)
+      char *ops[] = {TTYPE_TABLE};
+#undef TK
+#undef OP
+
+      std::cout << ops[type > CPP_EOF ? type - 1 : type];
+    }
+    std::cout << "\n";
+  }
 };
 
 /* Represents the contents of a file cpplib has read in.  */
@@ -289,9 +328,6 @@ private:
   /* Lexing.  */
   cpp_token *cur_token;
 
-  /* A token demarking macro arguments.  */
-  cpp_token endarg;
-
   /* Identifier hash table.  */
   struct ht *hash_table;
 
@@ -310,7 +346,7 @@ private:
 
 public:
   cpp_token *get_token();
-  void pop_buffer();
+  cpp_reader(char *filename);
 };
 
 #endif

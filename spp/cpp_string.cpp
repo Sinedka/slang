@@ -44,7 +44,6 @@ cpp_string::cpp_string(cpp_string &&other) noexcept
 // Копирующее присваивание
 cpp_string &cpp_string::operator=(const cpp_string &other) {
   if (this != &other) {
-    free(text);
     len = other.len;
     if (other.text) {
       text = (char *)malloc(len + 1);
@@ -59,7 +58,6 @@ cpp_string &cpp_string::operator=(const cpp_string &other) {
 // Перемещающее присваивание
 cpp_string &cpp_string::operator=(cpp_string &&other) noexcept {
   if (this != &other) {
-    free(text);
     text = other.text;
     len = other.len;
     other.text = nullptr;
@@ -98,4 +96,8 @@ void cpp_string::print() {
 }
 
 // Деструктор
-cpp_string::~cpp_string() { free(text); }
+cpp_string::~cpp_string() {
+  if (text != nullptr) {
+    free(text);
+  }
+}

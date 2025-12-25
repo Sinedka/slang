@@ -26,7 +26,9 @@ cpp_file::cpp_file(const std::string &fname)
       char *tmp = static_cast<char *>(realloc(content, cap));
       if (!tmp) {
         std::cerr << "Ошибка перераспределения памяти\n";
-        free(content);
+        if (content != nullptr) {
+          free(content);
+        }
         content = nullptr;
         fclose(f);
         return;
@@ -35,6 +37,7 @@ cpp_file::cpp_file(const std::string &fname)
     }
 
     if ((unsigned char)c < 128) {
+      std::cout << static_cast<char>(c);
       content[length++] = static_cast<char>(c);
     } else {
       content[length++] = 0xff; // unknown

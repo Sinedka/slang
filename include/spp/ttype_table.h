@@ -13,7 +13,6 @@
   OP(XOR, "^")                                                                 \
   OP(RSHIFT, ">>")                                                             \
   OP(LSHIFT, "<<")                                                             \
-                                                                               \
   OP(COMPL, "~")                                                               \
   OP(AND_AND, "&&") /* logical */                                              \
   OP(OR_OR, "||")                                                              \
@@ -27,11 +26,8 @@
   OP(NOT_EQ, "!=")                                                             \
   OP(GREATER_EQ, ">=")                                                         \
   OP(LESS_EQ, "<=")                                                            \
-                                                                               \
-  /* These two are unary + / - in preprocessor expressions.  */                \
   OP(PLUS_EQ, "+=") /* math */                                                 \
   OP(MINUS_EQ, "-=")                                                           \
-                                                                               \
   OP(MULT_EQ, "*=")                                                            \
   OP(DIV_EQ, "/=")                                                             \
   OP(MOD_EQ, "%=")                                                             \
@@ -40,16 +36,13 @@
   OP(XOR_EQ, "^=")                                                             \
   OP(RSHIFT_EQ, ">>=")                                                         \
   OP(LSHIFT_EQ, "<<=")                                                         \
-  /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */                  \
   OP(HASH, "#") /* digraphs */                                                 \
   OP(PASTE, "##")                                                              \
   OP(OPEN_SQUARE, "[")                                                         \
   OP(CLOSE_SQUARE, "]")                                                        \
   OP(OPEN_BRACE, "{")                                                          \
   OP(CLOSE_BRACE, "}")                                                         \
-  /* The remainder of the punctuation. Order is not significant.*/             \
   OP(SEMICOLON, ";") /* structure */                                           \
-  OP(ELLIPSIS, "...")                                                          \
   OP(PLUS_PLUS, "++") /* increment */                                          \
   OP(MINUS_MINUS, "--")                                                        \
   OP(DEREF, "->") /* accessors */                                              \

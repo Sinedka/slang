@@ -2,6 +2,7 @@
 #include "spplib.h"
 #include "system.h"
 #include <format>
+#include <iostream>
 
 #define IF_NEXT_IS(CHAR, THEN_TYPE, ELSE_TYPE)                                 \
   {                                                                            \
@@ -77,20 +78,20 @@ void cpp_reader::lex_number(cpp_string &str) {
 // just return a token
 cpp_token *cpp_reader::_cpp_lex_direct() {
   cpp_token *result = cur_token;
+  result->val.str = cpp_string();
   char c = 0;
   result->flags = 0;
 
 whitespace:
-  c = *buffer->cur;
+  c = *buffer->cur++;
   switch (c) {
   case ' ':
   case '\t':
-    buffer->cur++;
     goto whitespace;
   case '\n': {
-    buffer->cur++;
     line++;
-    goto whitespace;
+    result->type = CPP_EOF;
+    break;
   }
   case '0':
   case '1':
@@ -103,6 +104,7 @@ whitespace:
   case '8':
   case '9': {
     result->type = CPP_NUMBER;
+    buffer->cur--;
     cpp_string t = cpp_string();
     lex_number(t);
     result->val.str = t;
@@ -161,6 +163,7 @@ whitespace:
   case 'X':
   case 'Y':
   case 'Z': {
+    buffer->cur--;
     result->type = CPP_NAME;
     cpp_string t = cpp_string();
     lex_identifier(t);
@@ -169,6 +172,7 @@ whitespace:
   }
   case '\'':
   case '"': {
+    buffer->cur--;
     result->val.str = cpp_string();
     this->lex_string(result->val.str, result->type);
 
@@ -176,12 +180,11 @@ whitespace:
   }
   case '/':
     // TODO: comment
-    buffer->cur++;
     goto whitespace;
   case '<': {
-    if (this->state.in_include) {
-      lex_string(result->val.str, result->type);
-    }
+    // if (this->state.in_include) {
+    //   lex_string(result->val.str, result->type);
+    // }
 
     result->type = CPP_LESS;
 
@@ -258,59 +261,59 @@ whitespace:
   case '*':
     IF_NEXT_IS('=', CPP_MULT_EQ, CPP_MULT);
     break;
-    case '=':
-      IF_NEXT_IS('=', CPP_EQ_EQ, CPP_EQ);
-      break;
-    case '!':
-      IF_NEXT_IS('=', CPP_NOT_EQ, CPP_NOT);
-      break;
-    case '^':
-      IF_NEXT_IS('=', CPP_XOR_EQ, CPP_XOR);
-      break;
-    case '#':
-      IF_NEXT_IS('#', CPP_PASTE, CPP_HASH);
-      break;
-    case '?':
-      result->type = CPP_QUERY;
-      break;
-    case '~':
-      result->type = CPP_COMPL;
-      break;
-    case ',':
-      result->type = CPP_COMMA;
-      break;
-    case '(':
-      result->type = CPP_OPEN_PAREN;
-      break;
-    case ')':
-      result->type = CPP_CLOSE_PAREN;
-      break;
-    case '[':
-      result->type = CPP_OPEN_SQUARE;
-      break;
-    case ']':
-      result->type = CPP_CLOSE_SQUARE;
-      break;
-    case '{':
-      result->type = CPP_OPEN_BRACE;
-      break;
-    case '}':
-      result->type = CPP_CLOSE_BRACE;
-      break;
-    case ';':
-      result->type = CPP_SEMICOLON;
-      break;
+  case '=':
+    IF_NEXT_IS('=', CPP_EQ_EQ, CPP_EQ);
+    break;
+  case '!':
+    IF_NEXT_IS('=', CPP_NOT_EQ, CPP_NOT);
+    break;
+  case '^':
+    IF_NEXT_IS('=', CPP_XOR_EQ, CPP_XOR);
+    break;
+  case '#':
+    IF_NEXT_IS('#', CPP_PASTE, CPP_HASH);
+    break;
+  case '?':
+    result->type = CPP_QUERY;
+    break;
+  case '~':
+    result->type = CPP_COMPL;
+    break;
+  case ',':
+    result->type = CPP_COMMA;
+    break;
+  case '(':
+    result->type = CPP_OPEN_PAREN;
+    break;
+  case ')':
+    result->type = CPP_CLOSE_PAREN;
+    break;
+  case '[':
+    result->type = CPP_OPEN_SQUARE;
+    break;
+  case ']':
+    result->type = CPP_CLOSE_SQUARE;
+    break;
+  case '{':
+    result->type = CPP_OPEN_BRACE;
+    break;
+  case '}':
+    result->type = CPP_CLOSE_BRACE;
+    break;
+  case ';':
+    result->type = CPP_SEMICOLON;
+    break;
 
-    default: {
-      new_cpp_error(ERROR, "invalid character");
-    }
+  default: {
+    new_cpp_error(ERROR, "invalid character");
   }
-  
+  }
+
   result->src_loc = line;
   return result;
 }
 
-bool cpp_reader::get_fresh_line(){
+bool cpp_reader::get_fresh_line() {
   while (!buffer->get_fresh_line()) {
     cpp_buffer *prev = buffer->get_prev();
     if (prev == nullptr) {
@@ -325,17 +328,17 @@ bool cpp_reader::get_fresh_line(){
 
 // call lex direct
 cpp_token *cpp_reader::get_token() {
-  if (get_fresh_line()) {
+  if (buffer->cur && *buffer->cur != '\0') {
     if (state.macro_expansion) {
       // TODO: expand macro
     } else {
       cpp_token *result = _cpp_lex_direct();
-      if (result->type == CPP_NAME) {
-        // TODO: check for macro and else
-        return result;
-      } else {
-        return result;
+      while (result->type == CPP_EOF) {
+        if(!get_fresh_line()) break;
+        result = _cpp_lex_direct();
       }
+
+      return result;
     }
   } else {
     cur_token->type = CPP_EOF;
@@ -345,3 +348,12 @@ cpp_token *cpp_reader::get_token() {
   return cur_token;
 }
 
+cpp_reader::cpp_reader(char *filename) {
+  buffer = new cpp_buffer(filename);
+  cur_token = new cpp_token();
+  get_fresh_line();
+}
+
+void cpp_reader::new_cpp_error(cpp_error_type type, std::string message) {
+  return;
+}

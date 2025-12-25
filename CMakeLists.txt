@@ -17,7 +17,7 @@ if(CMAKE_EXPORT_COMPILE_COMMANDS)
 endif()
 
 set(SOURCES
-    src/main.cpp
+    main.cpp
 )
 
 add_library(libiberty STATIC
@@ -32,7 +32,7 @@ add_library(system STATIC
 
 target_include_directories(system PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-file(GLOB SPP_SOURCES "/home/sinedka/slang/spp/*.cpp")
+file(GLOB SPP_SOURCES "spp/cpp_string.cpp" "spp/spp_buffer.cpp" "spp/spp_file.cpp" "spp/spp_reader.cpp" "spp/cpp_identifier.cpp")
 add_library(spp ${SPP_SOURCES})
 
 target_include_directories(spp PUBLIC ${CMAKE_SOURCE_DIR}/include/spp ${CMAKE_SOURCE_DIR}/include)
@@ -42,4 +42,4 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC libiberty)
+target_link_libraries(${PROJECT_NAME} PUBLIC spp system)
