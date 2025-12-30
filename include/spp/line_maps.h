@@ -1,5 +1,5 @@
-#ifndef LIBCPP_LINE_MAP_H
-#define LIBCPP_LINE_MAP_H
+#ifndef LIBSPP_LINE_MAP_H
+#define LIBSPP_LINE_MAP_H
 
 // just a line number for now
 // TODO: replase with location_t

@@ -11,7 +11,7 @@ enum {
   _sch_isupper = 0x0080,  /* A-Z */
   _sch_isxdigit = 0x0100, /* 0-9A-Fa-f */
 
-  /* Extra categories useful to cpplib.  */
+  /* Extra categories useful to spplib.  */
   _sch_isidst = 0x0200, /* A-Za-z_ */
   _sch_isvsp = 0x0400,  /* \n \r */
   _sch_isnvsp = 0x0800, /* space \t \f \v \0 */
@@ -21,8 +21,8 @@ enum {
   _sch_isalnum = _sch_isalpha | _sch_isdigit, /* A-Za-z0-9 */
   _sch_isidnum = _sch_isidst | _sch_isdigit,  /* A-Za-z0-9_ */
   _sch_isgraph = _sch_isalnum | _sch_ispunct, /* isprint and not space */
-  _sch_iscppsp = _sch_isvsp | _sch_isnvsp,    /* isspace + \0 */
-  _sch_isbasic = _sch_isprint | _sch_iscppsp  /* basic charset of ISO C
+  _sch_issppsp = _sch_isvsp | _sch_isnvsp,    /* isspace + \0 */
+  _sch_isbasic = _sch_isprint | _sch_issppsp  /* basic charset of ISO C
                                                  (plus ` and @)  */
 };
 
@@ -137,4 +137,4 @@ const unsigned short _sch_istable[256] =
 #define IS_ISOBASIC(c) _sch_test(c, _sch_isbasic)
 #define IS_VSPACE(c) _sch_test(c, _sch_isvsp)
 #define IS_NVSPACE(c) _sch_test(c, _sch_isnvsp)
-#define IS_SPACE_OR_NUL(c) _sch_test(c, _sch_iscppsp)
+#define IS_SPACE_OR_NUL(c) _sch_test(c, _sch_issppsp)

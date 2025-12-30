@@ -1,9 +1,8 @@
 #include "spplib.h"
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
 
-cpp_file::cpp_file(const std::string &fname)
+spp_file::spp_file(const std::string &fname)
     : filename(fname), content(nullptr), length(0) {
   FILE *f = fopen(fname.c_str(), "rb");
   if (!f) {
@@ -37,7 +36,6 @@ cpp_file::cpp_file(const std::string &fname)
     }
 
     if ((unsigned char)c < 128) {
-      std::cout << static_cast<char>(c);
       content[length++] = static_cast<char>(c);
     } else {
       content[length++] = 0xff; // unknown
@@ -48,4 +46,4 @@ cpp_file::cpp_file(const std::string &fname)
   fclose(f);
 }
 
-cpp_file::~cpp_file() { free(content); }
+spp_file::~spp_file() { free(content); }

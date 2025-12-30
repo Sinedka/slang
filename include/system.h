@@ -12,7 +12,7 @@ typedef unsigned char uchar;
 #define HT_HASHFINISH(r, len) ((r) + (len))
 
 
-#define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
+#define SPP_HASHNODE(HNODE)	((spp_hashnode *) (HNODE))
 #define HT_NODE(NODE)		(&(NODE)->ident)
 #define NODE_LEN(NODE)		HT_LEN (HT_NODE (NODE))
 #define NODE_NAME(NODE)		HT_STR (HT_NODE (NODE))

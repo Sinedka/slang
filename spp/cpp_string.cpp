@@ -3,7 +3,7 @@
 #include <iostream>
 
 // Конструктор по указателю и размеру
-cpp_string::cpp_string(char *base, unsigned int size) : len(size) {
+spp_string::spp_string(char *base, unsigned int size) : len(size) {
   text = (char *)malloc(len + 1);
   if (text) {
     memcpy(text, base, len);
@@ -12,7 +12,7 @@ cpp_string::cpp_string(char *base, unsigned int size) : len(size) {
 }
 
 // Конструктор по диапазону указателей
-cpp_string::cpp_string(char *base, char *end) {
+spp_string::spp_string(char *base, char *end) {
   len = end - base;
   text = (char *)malloc(len + 1);
   if (text) {
@@ -22,10 +22,10 @@ cpp_string::cpp_string(char *base, char *end) {
 }
 
 // Конструктор по умолчанию
-cpp_string::cpp_string() : len(0), text(nullptr) {}
+spp_string::spp_string() : len(0), text(nullptr) {}
 
 // Копирующий конструктор
-cpp_string::cpp_string(const cpp_string &other) : len(other.len) {
+spp_string::spp_string(const spp_string &other) : len(other.len) {
   if (other.text) {
     text = (char *)malloc(len + 1);
     memcpy(text, other.text, len + 1);
@@ -35,14 +35,14 @@ cpp_string::cpp_string(const cpp_string &other) : len(other.len) {
 }
 
 // Перемещающий конструктор
-cpp_string::cpp_string(cpp_string &&other) noexcept
+spp_string::spp_string(spp_string &&other) noexcept
     : len(other.len), text(other.text) {
   other.text = nullptr;
   other.len = 0;
 }
 
 // Копирующее присваивание
-cpp_string &cpp_string::operator=(const cpp_string &other) {
+spp_string &spp_string::operator=(const spp_string &other) {
   if (this != &other) {
     len = other.len;
     if (other.text) {
@@ -56,7 +56,7 @@ cpp_string &cpp_string::operator=(const cpp_string &other) {
 }
 
 // Перемещающее присваивание
-cpp_string &cpp_string::operator=(cpp_string &&other) noexcept {
+spp_string &spp_string::operator=(spp_string &&other) noexcept {
   if (this != &other) {
     text = other.text;
     len = other.len;
@@ -67,7 +67,7 @@ cpp_string &cpp_string::operator=(cpp_string &&other) noexcept {
 }
 
 // Добавление строки с realloc
-void cpp_string::add(const cpp_string str) {
+void spp_string::add(const spp_string str) {
   if (!str.text)
     return; // если строка пустая, ничего не делаем
 
@@ -81,7 +81,7 @@ void cpp_string::add(const cpp_string str) {
 }
 
 // Простейший хэш (djb2)
-unsigned int cpp_string::get_hash() {
+unsigned int spp_string::get_hash() {
   unsigned int hash = 5381;
   for (unsigned int i = 0; i < len; ++i) {
     hash = ((hash << 5) + hash) + text[i];
@@ -90,13 +90,13 @@ unsigned int cpp_string::get_hash() {
 }
 
 // Печать строки
-void cpp_string::print() {
+void spp_string::print() {
   if (text)
     std::cout << text;
 }
 
 // Деструктор
-cpp_string::~cpp_string() {
+spp_string::~spp_string() {
   if (text != nullptr) {
     free(text);
   }

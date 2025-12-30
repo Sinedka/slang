@@ -1,10 +1,10 @@
 #include "spplib.h"
 #include <cstring>
 
-bool cpp_buffer::get_fresh_line() {
+bool spp_buffer::get_fresh_line() {
   if (!line_begin)
     delete[] line_begin;
-  file_cur++;
+  // file_cur++;
   if (*file_cur == '\0')
     return false;
 
@@ -25,15 +25,15 @@ bool cpp_buffer::get_fresh_line() {
 
   return true;
 }
-cpp_buffer::cpp_buffer(char *filename) {
+spp_buffer::spp_buffer(char *filename) {
   line_begin = nullptr;
-  file = new cpp_file(filename);
-  file_cur = file->content-1;
+  file = new spp_file(filename);
+  file_cur = file->content;
 }
 
-cpp_buffer::~cpp_buffer() {
+spp_buffer::~spp_buffer() {
   delete file;
   delete[] line_begin;
 }
 
-cpp_buffer *cpp_buffer::get_prev() { return prev; }
+spp_buffer *spp_buffer::get_prev() { return prev; }

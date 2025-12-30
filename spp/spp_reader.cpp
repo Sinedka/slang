@@ -2,7 +2,6 @@
 #include "spplib.h"
 #include "system.h"
 #include <format>
-#include <iostream>
 
 #define IF_NEXT_IS(CHAR, THEN_TYPE, ELSE_TYPE)                                 \
   {                                                                            \
@@ -11,29 +10,29 @@
       buffer->cur++, result->type = THEN_TYPE;                                 \
   }
 
-void cpp_reader::lex_identifier(cpp_string &str) {
+void spp_reader::lex_identifier(spp_string &str) {
   char *cur = this->buffer->cur;
 
   while (ISIDNUM(*cur))
     cur++;
 
-  str.add(cpp_string(this->buffer->cur, cur));
+  str.add(spp_string(this->buffer->cur, cur));
 
   this->buffer->cur = cur;
 }
 
-void cpp_reader::lex_string(cpp_string &str, sl_ttype &type) {
+void spp_reader::lex_string(spp_string &str, sl_ttype &type) {
   char terminator;
   char *cur = this->buffer->cur;
 
   terminator = *cur++;
 
   if (terminator == '"')
-    type = CPP_STRING;
+    type = SPP_STRING;
   else if (terminator == '\'')
-    type = CPP_CHAR;
+    type = SPP_CHAR;
   else
-    terminator = '>', type = CPP_HEADER_NAME;
+    terminator = '>', type = SPP_HEADER_NAME;
 
   for (;;) {
     char c = *cur++;
@@ -44,16 +43,16 @@ void cpp_reader::lex_string(cpp_string &str, sl_ttype &type) {
       break;
     } else if (c == '\n') {
       cur--;
-      type = CPP_OTHER;
+      type = SPP_OTHER;
       break;
     }
   }
 
-  if (type == CPP_OTHER)
-    new_cpp_error(WARNING,
+  if (type == SPP_OTHER)
+    new_spp_error(WARNING,
                   std::format("missing terminating %c character", terminator));
 
-  str.add(cpp_string(this->buffer->cur, cur));
+  str.add(spp_string(this->buffer->cur, cur));
 
   buffer->cur = cur;
 
@@ -61,13 +60,13 @@ void cpp_reader::lex_string(cpp_string &str, sl_ttype &type) {
     lex_identifier(str);
 }
 
-void cpp_reader::lex_number(cpp_string &str) {
+void spp_reader::lex_number(spp_string &str) {
   char *cur = this->buffer->cur;
 
   while (ISIDNUM(*cur) || *cur == '.')
     cur++;
 
-  str.add(cpp_string(this->buffer->cur, cur));
+  str.add(spp_string(this->buffer->cur, cur));
 
   buffer->cur = cur;
 
@@ -76,9 +75,9 @@ void cpp_reader::lex_number(cpp_string &str) {
 }
 
 // just return a token
-cpp_token *cpp_reader::_cpp_lex_direct() {
-  cpp_token *result = cur_token;
-  result->val.str = cpp_string();
+spp_token *spp_reader::_spp_lex_direct() {
+  spp_token *result = cur_token;
+  result->val.str = spp_string();
   char c = 0;
   result->flags = 0;
 
@@ -90,7 +89,7 @@ whitespace:
     goto whitespace;
   case '\n': {
     line++;
-    result->type = CPP_EOF;
+    result->type = SPP_EOF;
     break;
   }
   case '0':
@@ -103,9 +102,9 @@ whitespace:
   case '7':
   case '8':
   case '9': {
-    result->type = CPP_NUMBER;
+    result->type = SPP_NUMBER;
     buffer->cur--;
-    cpp_string t = cpp_string();
+    spp_string t = spp_string();
     lex_number(t);
     result->val.str = t;
     break;
@@ -164,16 +163,16 @@ whitespace:
   case 'Y':
   case 'Z': {
     buffer->cur--;
-    result->type = CPP_NAME;
-    cpp_string t = cpp_string();
+    result->type = SPP_NAME;
+    spp_string t = spp_string();
     lex_identifier(t);
-    result->val.node = cpp_identifier(t);
+    result->val.str = t;
     break;
   }
   case '\'':
   case '"': {
     buffer->cur--;
-    result->val.str = cpp_string();
+    result->val.str = spp_string();
     this->lex_string(result->val.str, result->type);
 
     break;
@@ -186,126 +185,126 @@ whitespace:
     //   lex_string(result->val.str, result->type);
     // }
 
-    result->type = CPP_LESS;
+    result->type = SPP_LESS;
 
     if (*buffer->cur == '=') {
-      buffer->cur++, result->type = CPP_LESS_EQ;
+      buffer->cur++, result->type = SPP_LESS_EQ;
     } else if (*buffer->cur == '<') {
       buffer->cur++;
       if (*buffer->cur == '=')
-        buffer->cur++, result->type = CPP_LSHIFT_EQ;
+        buffer->cur++, result->type = SPP_LSHIFT_EQ;
       else
-        result->type = CPP_LSHIFT;
+        result->type = SPP_LSHIFT;
     }
     break;
   }
 
   case '>':
-    result->type = CPP_GREATER;
+    result->type = SPP_GREATER;
     if (*buffer->cur == '=') {
-      buffer->cur++, result->type = CPP_GREATER_EQ;
+      buffer->cur++, result->type = SPP_GREATER_EQ;
     } else if (*buffer->cur == '>') {
       buffer->cur++;
       if (*buffer->cur == '=')
-        buffer->cur++, result->type = CPP_RSHIFT_EQ;
+        buffer->cur++, result->type = SPP_RSHIFT_EQ;
       else
-        result->type = CPP_RSHIFT;
+        result->type = SPP_RSHIFT;
     }
     break;
   case '%':
-    result->type = CPP_MOD;
+    result->type = SPP_MOD;
     if (*buffer->cur == '=')
-      buffer->cur++, result->type = CPP_MOD_EQ;
+      buffer->cur++, result->type = SPP_MOD_EQ;
     break;
   case '.':
-    result->type = CPP_DOT;
+    result->type = SPP_DOT;
     break;
   case '+':
-    result->type = CPP_PLUS;
+    result->type = SPP_PLUS;
     if (*buffer->cur == '+')
-      buffer->cur++, result->type = CPP_PLUS_PLUS;
+      buffer->cur++, result->type = SPP_PLUS_PLUS;
     else if (*buffer->cur == '=')
-      buffer->cur++, result->type = CPP_PLUS_EQ;
+      buffer->cur++, result->type = SPP_PLUS_EQ;
     break;
   case '-':
-    result->type = CPP_MINUS;
+    result->type = SPP_MINUS;
     if (*buffer->cur == '>') {
       buffer->cur++;
-      result->type = CPP_DEREF;
+      result->type = SPP_DEREF;
     } else if (*buffer->cur == '-')
-      buffer->cur++, result->type = CPP_MINUS_MINUS;
+      buffer->cur++, result->type = SPP_MINUS_MINUS;
     else if (*buffer->cur == '=')
-      buffer->cur++, result->type = CPP_MINUS_EQ;
+      buffer->cur++, result->type = SPP_MINUS_EQ;
     break;
   case '&':
-    result->type = CPP_AND;
+    result->type = SPP_AND;
     if (*buffer->cur == '&')
-      buffer->cur++, result->type = CPP_AND_AND;
+      buffer->cur++, result->type = SPP_AND_AND;
     else if (*buffer->cur == '=')
-      buffer->cur++, result->type = CPP_AND_EQ;
+      buffer->cur++, result->type = SPP_AND_EQ;
     break;
   case '|':
-    result->type = CPP_OR;
+    result->type = SPP_OR;
     if (*buffer->cur == '|')
-      buffer->cur++, result->type = CPP_OR_OR;
+      buffer->cur++, result->type = SPP_OR_OR;
     else if (*buffer->cur == '=')
-      buffer->cur++, result->type = CPP_OR_EQ;
+      buffer->cur++, result->type = SPP_OR_EQ;
     break;
   case ':':
-    result->type = CPP_COLON;
+    result->type = SPP_COLON;
     if (*buffer->cur == ':') {
-      buffer->cur++, result->type = CPP_SCOPE;
+      buffer->cur++, result->type = SPP_SCOPE;
     }
     break;
 
   case '*':
-    IF_NEXT_IS('=', CPP_MULT_EQ, CPP_MULT);
+    IF_NEXT_IS('=', SPP_MULT_EQ, SPP_MULT);
     break;
   case '=':
-    IF_NEXT_IS('=', CPP_EQ_EQ, CPP_EQ);
+    IF_NEXT_IS('=', SPP_EQ_EQ, SPP_EQ);
     break;
   case '!':
-    IF_NEXT_IS('=', CPP_NOT_EQ, CPP_NOT);
+    IF_NEXT_IS('=', SPP_NOT_EQ, SPP_NOT);
     break;
   case '^':
-    IF_NEXT_IS('=', CPP_XOR_EQ, CPP_XOR);
+    IF_NEXT_IS('=', SPP_XOR_EQ, SPP_XOR);
     break;
   case '#':
-    IF_NEXT_IS('#', CPP_PASTE, CPP_HASH);
+    IF_NEXT_IS('#', SPP_PASTE, SPP_HASH);
     break;
   case '?':
-    result->type = CPP_QUERY;
+    result->type = SPP_QUERY;
     break;
   case '~':
-    result->type = CPP_COMPL;
+    result->type = SPP_COMPL;
     break;
   case ',':
-    result->type = CPP_COMMA;
+    result->type = SPP_COMMA;
     break;
   case '(':
-    result->type = CPP_OPEN_PAREN;
+    result->type = SPP_OPEN_PAREN;
     break;
   case ')':
-    result->type = CPP_CLOSE_PAREN;
+    result->type = SPP_CLOSE_PAREN;
     break;
   case '[':
-    result->type = CPP_OPEN_SQUARE;
+    result->type = SPP_OPEN_SQUARE;
     break;
   case ']':
-    result->type = CPP_CLOSE_SQUARE;
+    result->type = SPP_CLOSE_SQUARE;
     break;
   case '{':
-    result->type = CPP_OPEN_BRACE;
+    result->type = SPP_OPEN_BRACE;
     break;
   case '}':
-    result->type = CPP_CLOSE_BRACE;
+    result->type = SPP_CLOSE_BRACE;
     break;
   case ';':
-    result->type = CPP_SEMICOLON;
+    result->type = SPP_SEMICOLON;
     break;
 
   default: {
-    new_cpp_error(ERROR, "invalid character");
+    new_spp_error(ERROR, "invalid character");
   }
   }
 
@@ -313,13 +312,13 @@ whitespace:
   return result;
 }
 
-bool cpp_reader::get_fresh_line() {
+bool spp_reader::get_fresh_line() {
   while (!buffer->get_fresh_line()) {
-    cpp_buffer *prev = buffer->get_prev();
+    spp_buffer *prev = buffer->get_prev();
     if (prev == nullptr) {
       return false;
     } else {
-      buffer->~cpp_buffer();
+      buffer->~spp_buffer();
       buffer = prev;
     }
   }
@@ -327,33 +326,36 @@ bool cpp_reader::get_fresh_line() {
 }
 
 // call lex direct
-cpp_token *cpp_reader::get_token() {
+spp_token *spp_reader::get_token() {
   if (buffer->cur && *buffer->cur != '\0') {
     if (state.macro_expansion) {
       // TODO: expand macro
     } else {
-      cpp_token *result = _cpp_lex_direct();
-      while (result->type == CPP_EOF) {
+      spp_token *result = _spp_lex_direct();
+      while (result->type == SPP_EOF) {
         if(!get_fresh_line()) break;
-        result = _cpp_lex_direct();
+        result = _spp_lex_direct();
       }
+      result->print();
 
       return result;
     }
   } else {
-    cur_token->type = CPP_EOF;
+    cur_token->type = SPP_EOF;
     cur_token->src_loc = line;
     cur_token->flags = 0;
   }
+  // cur_token->print();
   return cur_token;
 }
 
-cpp_reader::cpp_reader(char *filename) {
-  buffer = new cpp_buffer(filename);
-  cur_token = new cpp_token();
+spp_reader::spp_reader(char *filename) {
+  buffer = new spp_buffer(filename);
+  cur_token = new spp_token();
+  cur_token->src_loc=0;
   get_fresh_line();
 }
 
-void cpp_reader::new_cpp_error(cpp_error_type type, std::string message) {
+void spp_reader::new_spp_error(spp_error_type type, std::string message) {
   return;
 }
